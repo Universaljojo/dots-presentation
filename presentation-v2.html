@@ -1,0 +1,1521 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>从交付到产品</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@100;300;400;500;700;900&family=Outfit:wght@100;200;300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f5f5f7;
+    --text: #1d1d1f;
+    --sub: #6e6e73;
+    --muted: #86868b;
+    --faint: #d2d2d7;
+    --accent: #b5363a;
+    --cn: 'Noto Sans SC', -apple-system, sans-serif;
+    --num: 'Outfit', sans-serif;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html, body {
+    width: 100%; height: 100%;
+    overflow: hidden;
+    background: var(--bg);
+    font-family: var(--cn);
+    -webkit-font-smoothing: antialiased;
+    color: var(--text);
+  }
+
+  /* ── Slides — transition B: scale fade ── */
+  .slide {
+    position: fixed;
+    inset: 0;
+    width: 100vw;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 80px 120px;
+    opacity: 0;
+    transform: scale(0.92);
+    transition: opacity 0.55s cubic-bezier(0.4,0,0.2,1), transform 0.55s cubic-bezier(0.4,0,0.2,1);
+    pointer-events: none;
+    z-index: 0;
+    background: var(--bg);
+  }
+  .slide.active {
+    opacity: 1;
+    transform: scale(1);
+    pointer-events: auto;
+    z-index: 1;
+  }
+  /* Staggered element entrance — exclude P2 number overlay */
+  .slide.active > .tag,
+  .slide.active > .slide-title,
+  .slide.active > .slide-subtitle,
+  .slide.active > .studio { animation: stagger-in 0.45s 0.1s both; }
+  .slide.active > .number-row { animation: stagger-in 0.5s 0.24s both; }
+  .slide.active .cards-row { animation: stagger-in 0.5s 0.3s both; }
+  .slide.active .media-placeholder { animation: stagger-in 0.5s 0.3s both; }
+  .slide.active .compare-row { animation: stagger-in 0.5s 0.3s both; }
+  .slide.active .timeline { animation: stagger-in 0.5s 0.3s both; }
+  .slide.active .steps-row { animation: stagger-in 0.5s 0.3s both; }
+  .slide.active .team { animation: stagger-in 0.45s 0.34s both; }
+  .p11.active .p11-text { animation: stagger-in 0.45s 0.1s both; }
+  @keyframes stagger-in {
+    from { opacity: 0; transform: scale(0.88); }
+    to { opacity: 1; transform: scale(1); }
+  }
+
+  /* ── Common elements ── */
+  .tag {
+    font-size: 18px;
+    font-weight: 500;
+    letter-spacing: 2px;
+    color: var(--accent);
+    margin-bottom: 24px;
+  }
+  .slide-title {
+    font-weight: 700;
+    font-size: 52px;
+    line-height: 1.15;
+    letter-spacing: -0.5px;
+    color: var(--text);
+  }
+  .slide-subtitle {
+    font-size: 20px;
+    font-weight: 300;
+    line-height: 1.6;
+    color: var(--sub);
+    margin-top: 20px;
+    max-width: 700px;
+  }
+
+  /* ── Media placeholder ── */
+  .media-placeholder {
+    border: 2px dashed var(--faint);
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    color: var(--muted);
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 1.6;
+    background: rgba(0,0,0,0.015);
+  }
+  .media-placeholder.ratio-16-9 {
+    width: 100%;
+    aspect-ratio: 16/9;
+  }
+  .media-placeholder.ratio-4-3 {
+    width: 100%;
+    aspect-ratio: 4/3;
+  }
+
+  /* ── Cards ── */
+  .cards-row {
+    display: flex;
+    gap: 24px;
+    margin-top: 40px;
+  }
+  .card {
+    flex: 1;
+    background: #fff;
+    border-radius: 20px;
+    padding: 40px 36px;
+  }
+  .card-num {
+    font-family: var(--num);
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--accent);
+    margin-bottom: 12px;
+  }
+  .card-title {
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 10px;
+    line-height: 1.3;
+  }
+  .card-body {
+    font-size: 16px;
+    font-weight: 300;
+    color: var(--sub);
+    line-height: 1.7;
+  }
+
+  /* ── Page counter ── */
+  .page-counter {
+    position: fixed;
+    top: 36px;
+    right: 48px;
+    font-family: var(--num);
+    font-size: 13px;
+    font-weight: 400;
+    color: var(--muted);
+    z-index: 100;
+    letter-spacing: 1px;
+  }
+
+  /* ── Nav dots ── */
+  .nav-dots {
+    position: fixed;
+    bottom: 32px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 8px;
+    z-index: 100;
+  }
+  .nav-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--faint);
+    cursor: pointer;
+    transition: background 0.3s ease, transform 0.3s ease;
+    border: none;
+    padding: 0;
+  }
+  .nav-dot.active {
+    background: var(--accent);
+    transform: scale(1.25);
+  }
+
+  /* ══════════════════════════════════
+     PAGE-SPECIFIC STYLES
+     ══════════════════════════════════ */
+
+  /* P1 — Title */
+  .p1 { align-items: center; text-align: center; }
+  .p1 .studio {
+    font-size: 16px;
+    font-weight: 500;
+    letter-spacing: 4px;
+    color: var(--accent);
+    margin-bottom: 56px;
+  }
+  .p1 .slide-title {
+    font-size: 108px;
+    line-height: 1.05;
+    letter-spacing: -2px;
+  }
+  .p1 .slide-title .light { font-weight: 100; }
+  .p1 .slide-title .heavy { font-weight: 900; }
+  .p1 .slide-subtitle { max-width: 600px; margin-top: 44px; }
+
+  /* P2 — Video wall (v7-style, JS-controlled) */
+  .p2 {
+    padding: 0;
+    background: #000;
+  }
+  .p2 .hero-row {
+    display: flex; gap: 16px;
+    justify-content: center; align-items: center;
+    position: absolute; top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 5;
+    transition: all 1.2s cubic-bezier(0.16,1,0.3,1);
+  }
+  .p2 .hero-card {
+    width: 140px; border-radius: 12px; overflow: hidden;
+    border: 1px solid rgba(255,255,255,0.15);
+    opacity: 0; transform: scale(0.6) translateY(40px);
+    transition: all 0.8s cubic-bezier(0.16,1,0.3,1);
+    box-shadow: 0 8px 40px rgba(0,0,0,0.5);
+  }
+  .p2 .hero-card video {
+    width: 100%; display: block;
+    aspect-ratio: 9/16; object-fit: cover;
+  }
+  .p2 .vw-wall {
+    position: absolute; top: -20px; left: -10px; right: -10px; bottom: -20px;
+    display: flex; flex-direction: column; gap: 4px;
+    z-index: 2; opacity: 0;
+    transition: opacity 1s ease;
+  }
+  .p2 .vw-row {
+    display: flex; gap: 4px; height: calc(100% / 4);
+  }
+  .p2 .vw-row:nth-child(even) { margin-left: 60px; }
+  .p2 .vw-cell {
+    flex: 0 0 auto; width: 120px; height: 100%;
+    border-radius: 12px; overflow: hidden; position: relative;
+    opacity: 0; transform: scale(0.7);
+    transition: all 0.6s cubic-bezier(0.16,1,0.3,1);
+  }
+  .p2 .vw-cell video {
+    width: 100%; height: 100%;
+    object-fit: cover; object-position: top; display: block;
+  }
+  .p2 .vw-cell::after {
+    content: ''; position: absolute; inset: 0;
+    background: rgba(0,0,0,0.2);
+    transition: background 0.3s ease;
+  }
+  .p2 .vw-vignette {
+    position: absolute; inset: 0;
+    background: radial-gradient(ellipse at center, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.92) 100%);
+    z-index: 3; pointer-events: none;
+    opacity: 0; transition: opacity 0.8s ease;
+  }
+  .p2 .number-overlay {
+    position: absolute; inset: 0; z-index: 10;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    pointer-events: none;
+    opacity: 0; transition: opacity 0.8s ease;
+  }
+  .p2 .overlay-tag {
+    font-size: 24px; font-weight: 500;
+    letter-spacing: 3px; color: var(--accent);
+    margin-bottom: 24px;
+    text-shadow: 0 2px 30px rgba(0,0,0,1);
+  }
+  .p2 .overlay-numbers {
+    display: flex; align-items: baseline; gap: 24px;
+  }
+  .p2 .overlay-sub {
+    font-size: 26px; font-weight: 300;
+    color: rgba(255,255,255,0.8);
+    margin-top: 24px; text-align: center; max-width: 700px;
+    text-shadow: 0 2px 30px rgba(0,0,0,1);
+  }
+  .p2 .num-old {
+    font-family: var(--num); font-size: 160px; font-weight: 800;
+    color: #fff; letter-spacing: -4px;
+    text-shadow: 0 4px 60px rgba(0,0,0,1);
+  }
+  .p2 .num-arrow {
+    font-family: var(--num); font-size: 52px; font-weight: 300;
+    color: rgba(255,255,255,0.3);
+  }
+  .p2 .num-new {
+    font-family: var(--num); font-size: 160px; font-weight: 800;
+    color: var(--accent); letter-spacing: -4px;
+    text-shadow: 0 4px 60px rgba(0,0,0,1);
+  }
+
+  /* P3 — Key shift (pure text, centered, line by line) */
+  .p3 { align-items: center; text-align: center; }
+  .p3 .slide-title { font-size: 52px; max-width: 800px; line-height: 1.3; }
+  .p3 .line { display: block; opacity: 0; transform: translateY(20px); transition: opacity 0.6s ease, transform 0.6s ease; }
+  .p3.active .line:nth-child(1) { opacity: 1; transform: translateY(0); transition-delay: 0.3s; }
+  .p3.active .line:nth-child(2) { opacity: 1; transform: translateY(0); transition-delay: 0.9s; }
+
+  /* P3b — 制作升级，上文字下视频 */
+  .p3b {
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    padding: 60px 80px;
+  }
+  .p3b .text-area {
+    display: flex; flex-direction: column;
+    align-items: center;
+    text-align: center;
+    margin-bottom: 36px;
+    opacity: 0; transform: translateY(20px);
+    transition: opacity 0.6s ease, transform 0.6s ease;
+  }
+  .p3b.active .text-area {
+    opacity: 1; transform: translateY(0);
+    transition-delay: 0.2s;
+  }
+  .p3b .tag {
+    font-size: 15px; font-weight: 400; letter-spacing: 2px;
+    color: var(--accent); margin-bottom: 10px;
+  }
+  .p3b .slide-title {
+    font-size: 52px; line-height: 1.2;
+  }
+  .p3b .slide-subtitle {
+    font-size: 16px; font-weight: 300; color: var(--sub);
+    margin-top: 10px; white-space: nowrap; line-height: 1.6;
+  }
+  .p3b .vid-area {
+    display: flex; gap: 3px;
+    justify-content: center;
+    height: 45vh;
+  }
+  .p3b .vid-group {
+    display: flex; gap: 3px;
+    opacity: 0; transform: translateY(30px);
+    transition: opacity 0.6s ease, transform 0.6s ease;
+  }
+  .p3b.active .vid-group:nth-child(1) {
+    opacity: 1; transform: translateY(0);
+    transition-delay: 0.6s;
+  }
+  .p3b.active .vid-group:nth-child(2) {
+    opacity: 1; transform: translateY(0);
+    transition-delay: 0.9s;
+  }
+  .p3b .vid-group + .vid-group {
+    margin-left: 48px;
+  }
+  .p3b .vid-col {
+    position: relative; overflow: hidden;
+    border-radius: 8px;
+    height: 100%;
+  }
+  .p3b .vid-col video {
+    height: 100%; width: auto;
+    display: block;
+  }
+  .p3b .vid-label {
+    position: absolute; bottom: 8px; left: 0; right: 0;
+    text-align: center;
+    font-size: 11px; color: rgba(0,0,0,0.4);
+    letter-spacing: 0.5px;
+  }
+
+  /* P3c — 主动推送，逐行出现，第二行红色 */
+  .p3c { align-items: center; text-align: center; }
+  .p3c .slide-title { font-size: 52px; max-width: 800px; line-height: 1.3; }
+  .p3c .line { display: block; opacity: 0; transform: translateY(20px); transition: opacity 0.6s ease, transform 0.6s ease; }
+  .p3c.active .line:nth-child(1) { opacity: 1; transform: translateY(0); transition-delay: 0.3s; }
+  .p3c.active .line:nth-child(2) { opacity: 1; transform: translateY(0); transition-delay: 0.9s; }
+
+  /* P4, P5, P8, P9 — Media pages */
+  .media-page .media-placeholder {
+    margin-top: 36px;
+    max-height: 50vh;
+    min-height: 320px;
+  }
+
+  /* P6 — Two pain points */
+  .p6 .card-icon {
+    font-size: 28px;
+    margin-bottom: 8px;
+  }
+  .p6 .card-arrow {
+    color: var(--accent);
+    font-weight: 500;
+    margin: 8px 0;
+    font-size: 15px;
+  }
+
+  /* P7 — Tada demo, full-bleed → title reveal */
+  .p7 {
+    padding: 0;
+    position: relative;
+    background: #f5f2ee;
+  }
+  .p7 .demo-full {
+    position: absolute; inset: 0;
+    z-index: 1;
+    transition: filter 1.2s cubic-bezier(0.4,0,0.2,1);
+  }
+  .p7 .demo-full iframe {
+    width: 100%; height: 100%;
+    border: none; display: block;
+  }
+  .p7 .demo-full.dimmed {
+    filter: blur(12px) brightness(0.7);
+  }
+  .p7 .title-reveal {
+    position: absolute; inset: 0;
+    z-index: 10;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    text-align: center;
+    pointer-events: none;
+    opacity: 0;
+  }
+  .p7 .title-reveal.show {
+    opacity: 1;
+  }
+  .p7 .title-reveal .tag {
+    font-size: 18px; font-weight: 400; letter-spacing: 3px;
+    color: var(--accent);
+    margin-bottom: 20px;
+    clip-path: inset(0 100% 0 0);
+    transition: clip-path 0.8s cubic-bezier(0.16,1,0.3,1);
+  }
+  .p7 .title-reveal.show .tag {
+    clip-path: inset(0 0% 0 0);
+    transition-delay: 0.3s;
+  }
+  .p7 .title-reveal .title {
+    font-family: var(--cn); font-weight: 900;
+    font-size: 72px; color: var(--text); line-height: 1.1;
+    letter-spacing: -1px;
+    filter: blur(20px);
+    transform: scale(0.85);
+    opacity: 0;
+    transition: filter 0.9s cubic-bezier(0.4,0,0.2,1),
+                transform 0.9s cubic-bezier(0.16,1,0.3,1),
+                opacity 0.6s ease;
+  }
+  .p7 .title-reveal.show .title {
+    filter: blur(0);
+    transform: scale(1);
+    opacity: 1;
+    transition-delay: 0.5s;
+  }
+
+  /* P8 — Sunrise login → quick generate */
+  .p8 {
+    padding: 0;
+    background: var(--bg);
+  }
+  .p8 .p8-frame {
+    position: absolute; inset: 0;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.8s ease;
+  }
+  .p8 .p8-frame.show { opacity: 1; }
+  .p8 .p8-frame.interactive.show { pointer-events: auto; }
+  .p8 .p8-frame iframe {
+    width: 100%; height: 100%; border: none; display: block;
+  }
+
+  /* P9 — Seedance demo, full-bleed like P7 */
+  .p9 {
+    padding: 0;
+    background: var(--bg);
+  }
+  .p9 iframe {
+    width: 100%; height: 100%; border: none; display: block;
+    pointer-events: none;
+  }
+
+  /* P10 — Timeline */
+  .p10 .timeline {
+    display: flex;
+    gap: 32px;
+    margin-top: 48px;
+  }
+  .p10 .tl-phase {
+    flex: 1;
+    background: #fff;
+    border-radius: 20px;
+    padding: 36px 32px;
+    position: relative;
+  }
+  .p10 .tl-phase.current { border-left: 4px solid var(--accent); }
+  .p10 .tl-label {
+    font-family: var(--num);
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 16px;
+  }
+  .p10 .tl-phase:not(.current) .tl-label { color: var(--muted); }
+  .p10 .tl-items {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .p10 .tl-items li {
+    font-size: 16px;
+    font-weight: 400;
+    color: var(--text);
+    line-height: 1.5;
+  }
+  .p10 .tl-items li::before {
+    content: '';
+    display: inline-block;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--faint);
+    margin-right: 10px;
+    vertical-align: middle;
+  }
+  .p10 .tl-phase.current .tl-items li::before { background: var(--accent); }
+
+  /* P11 — Starry intro */
+  .p11 {
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-start;
+    padding: 80px 120px;
+  }
+  .p11-text {
+    flex-shrink: 0;
+    display: flex; flex-direction: column; justify-content: center;
+    width: 480px;
+  }
+  .p11-text .tag { margin-bottom: 24px; }
+  .p11-text .slide-title { font-size: 44px; line-height: 1.2; }
+  .p11-text .slide-subtitle { margin-top: 20px; font-size: 18px; line-height: 1.7; color: var(--sub); font-weight: 300; }
+  .p11-media {
+    flex: 1;
+    display: flex; gap: 16px; align-items: center; justify-content: center;
+    height: 100%; padding: 40px 0 40px 60px;
+    opacity: 0; transform: translateX(32px);
+    transition: opacity 0.6s cubic-bezier(0.4,0,0.2,1), transform 0.6s cubic-bezier(0.4,0,0.2,1);
+  }
+  .p11-media.show { opacity: 1; transform: translateX(0); }
+  .p11-media img {
+    max-height: calc(100vh - 120px);
+    width: auto;
+    border-radius: 16px; box-shadow: 0 4px 24px rgba(0,0,0,0.12);
+  }
+  .p11-media video {
+    max-height: calc(100vh - 120px);
+    width: auto;
+    border-radius: 16px; box-shadow: 0 4px 24px rgba(0,0,0,0.12);
+  }
+
+  /* P12 — 一键做同款 */
+  .p12 {
+    padding: 48px 60px;
+    justify-content: center;
+    align-items: flex-start;
+  }
+  .p12-videos {
+    display: flex; gap: 12px; align-items: flex-start; justify-content: center;
+    width: 100%; flex: 1;
+  }
+  .p12-video-wrap {
+    flex: 1;
+    opacity: 0; transform: scale(0.94);
+    transition: opacity 0.5s cubic-bezier(0.4,0,0.2,1), transform 0.5s cubic-bezier(0.4,0,0.2,1);
+  }
+  .p12-video-wrap.show { opacity: 1; transform: scale(1); }
+  .p12-video-wrap video {
+    width: 100%;
+    max-height: calc(100vh - 96px);
+    object-fit: contain;
+    object-position: top;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.12);
+    display: block;
+  }
+  /* 最终文字 — 全屏覆盖 */
+  .p12-finale {
+    position: absolute; inset: 0;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    background: rgba(245,245,247,0.82);
+    backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+    opacity: 0;
+    transition: opacity 0.7s cubic-bezier(0.4,0,0.2,1);
+    pointer-events: none;
+    z-index: 10;
+    text-align: center;
+  }
+  .p12-finale.show { opacity: 1; pointer-events: auto; }
+  .p12-finale-main {
+    font-size: 36px; font-weight: 700; line-height: 1.5;
+    color: var(--text); letter-spacing: -0.3px;
+  }
+  .p12-finale-brand {
+    margin-top: 32px;
+    font-family: var(--num); font-size: 88px; font-weight: 800;
+    letter-spacing: -3px; color: var(--accent);
+    line-height: 1;
+  }
+
+  /* P13 — Starry demo + compare + steps (redesigned) */
+  .p13 {
+    flex-direction: row;
+    align-items: stretch;
+    padding: 0;
+    background: var(--bg);
+  }
+  /* 左：手机 demo — 占 45% 宽，深色背景衬托 */
+  .p13-phone {
+    flex: 0 0 45%;
+    display: flex; align-items: center; justify-content: center;
+    background: #111214;
+    position: relative;
+    overflow: hidden;
+    opacity: 0; transform: translateX(-40px);
+    transition: opacity 0.65s cubic-bezier(0.4,0,0.2,1), transform 0.65s cubic-bezier(0.4,0,0.2,1);
+  }
+  .p13-phone::after {
+    content: '';
+    position: absolute; inset: 0;
+    background: radial-gradient(ellipse at 30% 50%, rgba(79,125,255,0.12) 0%, transparent 65%);
+    pointer-events: none;
+    z-index: 0;
+  }
+  .p13-phone.show { opacity: 1; transform: translateX(0); }
+  /* 手机外壳 — 内联在 presentation 里 */
+  .p13-phone-shell {
+    position: relative;
+    z-index: 1;
+    width: 280px;
+    height: 604px;
+    background: #1a1a1a;
+    border-radius: 44px;
+    padding: 10px;
+    box-shadow:
+      0 0 0 1px #333,
+      0 30px 80px rgba(0,0,0,0.7),
+      inset 0 0 0 1px #444;
+    flex-shrink: 0;
+  }
+  .p13-phone-notch {
+    position: absolute;
+    top: 18px; left: 50%;
+    transform: translateX(-50%);
+    width: 88px; height: 22px;
+    background: #000;
+    border-radius: 999px;
+    z-index: 10;
+  }
+  .p13-phone-screen {
+    width: 100%; height: 100%;
+    border-radius: 36px;
+    overflow: hidden;
+    background: #000;
+    position: relative;
+  }
+  .p13-phone-screen iframe {
+    width: 430px;
+    height: 920px;
+    border: none;
+    transform-origin: top left;
+    transform: scale(0.605);
+    pointer-events: auto;
+    position: absolute;
+    top: 0; left: 0;
+  }
+  /* 右：信息区 — 占 55%，上下两块 */
+  .p13-right {
+    flex: 1;
+    display: flex; flex-direction: column;
+    padding: 56px 64px 56px 52px;
+    gap: 32px;
+    justify-content: center;
+  }
+  /* 右上：对比卡片横排 */
+  .p13-compare {
+    display: flex; flex-direction: row;
+    gap: 16px;
+    opacity: 0; transform: translateY(20px);
+    transition: opacity 0.55s cubic-bezier(0.4,0,0.2,1), transform 0.55s cubic-bezier(0.4,0,0.2,1);
+  }
+  .p13-compare.show { opacity: 1; transform: translateY(0); }
+  .p13-card {
+    flex: 1;
+    background: #fff;
+    border-radius: 16px;
+    padding: 20px 20px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.05);
+    border: 1.5px solid var(--faint);
+  }
+  .p13-card.highlight {
+    border-color: var(--accent);
+    background: linear-gradient(135deg, #fff 60%, rgba(181,54,58,0.04) 100%);
+  }
+  .p13-card-name {
+    font-size: 15px; font-weight: 700;
+    margin-bottom: 12px; color: var(--text);
+    display: flex; align-items: center; gap: 8px;
+  }
+  .p13-card.highlight .p13-card-name { color: var(--accent); }
+  .p13-card-item {
+    display: flex; align-items: flex-start; gap: 8px;
+    font-size: 13px; color: var(--sub);
+    padding: 6px 0;
+    border-top: 1px solid rgba(0,0,0,0.05);
+    line-height: 1.4;
+  }
+  .p13-card-item .x { color: var(--faint); flex-shrink: 0; margin-top: 1px; }
+  .p13-card-item .ck { color: var(--accent); font-weight: 700; flex-shrink: 0; margin-top: 1px; }
+  /* 右下：三步流程横排 */
+  .p13-steps {
+    display: flex; flex-direction: column;
+    gap: 16px;
+    opacity: 0; transform: translateY(20px);
+    transition: opacity 0.55s cubic-bezier(0.4,0,0.2,1), transform 0.55s cubic-bezier(0.4,0,0.2,1);
+    background: #fff;
+    border-radius: 16px;
+    padding: 24px 28px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.05);
+  }
+  .p13-steps.show { opacity: 1; transform: translateY(0); }
+  .p13-steps-label {
+    font-size: 11px; font-weight: 500; letter-spacing: 2px;
+    color: var(--muted); text-transform: uppercase;
+  }
+  .p13-steps-row {
+    display: flex; flex-direction: row;
+    align-items: center;
+    gap: 0;
+  }
+  .p13-step {
+    flex: 1;
+    display: flex; flex-direction: column; align-items: center;
+    text-align: center; gap: 8px;
+  }
+  .p13-step-icon {
+    font-size: 26px;
+    width: 48px; height: 48px;
+    background: rgba(181,54,58,0.07);
+    border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .p13-step-num {
+    font-family: var(--num); font-size: 10px; font-weight: 700;
+    color: var(--accent); letter-spacing: 1px; display: block;
+  }
+  .p13-step-text { font-size: 14px; font-weight: 600; color: var(--text); line-height: 1.3; }
+  .p13-step-arrow {
+    font-size: 18px; color: var(--faint);
+    padding: 0 8px; flex-shrink: 0;
+    margin-bottom: 8px;
+  }
+
+  /* P14 — Quote + logos */
+  .p14 {
+    align-items: center;
+    text-align: center;
+    justify-content: flex-start;
+    padding-top: 100px;
+  }
+  .p14 .quote-line {
+    font-size: 36px;
+    font-weight: 300;
+    color: var(--sub);
+    line-height: 1.8;
+  }
+  .p14 .quote-accent {
+    font-size: 36px;
+    font-weight: 700;
+    color: var(--text);
+    line-height: 1.8;
+    margin-top: 32px;
+  }
+  .p14 .quote-accent .line {
+    display: block;
+    opacity: 0; transform: translateY(18px);
+    transition: opacity 0.6s ease, transform 0.6s ease;
+  }
+  .p14.active .quote-accent .line:nth-child(1) { opacity: 1; transform: translateY(0); transition-delay: 0.2s; }
+  .p14.active .quote-accent .line:nth-child(2) { opacity: 1; transform: translateY(0); transition-delay: 0.55s; }
+  .p14-logos {
+    display: flex; gap: 72px; align-items: center; justify-content: center;
+    margin-top: 56px;
+  }
+  .p14-logo {
+    display: flex; align-items: center; gap: 14px;
+    opacity: 0; transform: translateY(20px);
+    transition: opacity 0.55s cubic-bezier(0.4,0,0.2,1), transform 0.55s cubic-bezier(0.4,0,0.2,1);
+  }
+  .p14-logo.show { opacity: 1; transform: translateY(0); }
+  .p14-logo-icon {
+    width: 48px; height: 48px; border-radius: 11px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 24px; color: #fff; font-weight: 700;
+    flex-shrink: 0;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+  }
+  .p14-logo-icon.tada {
+    background: linear-gradient(135deg, #d14d72, #f0a0b8);
+    box-shadow: 0 3px 12px rgba(209,77,114,0.3);
+  }
+  .p14-logo-icon.sunrise {
+    background: linear-gradient(135deg, #ea580c 0%, #f59e0b 50%, #fbbf24 100%);
+    box-shadow: 0 3px 12px rgba(234,88,12,0.3);
+  }
+  .p14-logo-icon.starry {
+    background: linear-gradient(140deg, #223b8a 0%, #4f7dff 55%, #67e8f9 100%);
+    box-shadow: 0 3px 12px rgba(60,90,199,0.3);
+  }
+  .p14-logo-text {
+    font-size: 22px; font-weight: 700; letter-spacing: 0.5px; color: var(--text);
+  }
+  .p14-logo-text .dot-tada { color: #d14d72; }
+  .p14-logo-text .dot-sunrise { color: #d97706; }
+  .p14-logo-text .dot-starry { color: #4f7dff; }
+
+  /* P15 — End */
+  .p15 {
+    align-items: center;
+    text-align: center;
+  }
+  .p15 .slide-title { font-size: 80px; }
+</style>
+</head>
+<body>
+
+<!-- ════════ P1 — 标题页 ════════ -->
+<section class="slide p1 active">
+  <div class="studio">AI 新媒体工作室</div>
+  <div class="slide-title"><span class="light">从交付到</span><span class="heavy">产品</span></div>
+  <div class="slide-subtitle">从代运营的经验中，长出垂直行业的内容壁垒</div>
+</section>
+
+<!-- ════════ P2 — 视频墙 + 数字叠加 ════════ -->
+<section class="slide p2">
+  <div class="hero-row" id="p2HeroRow">
+    <div class="hero-card"><video muted loop playsinline autoplay preload="auto" src="04.07/p2/贵烟-热点.mp4"></video></div>
+    <div class="hero-card"><video muted loop playsinline autoplay preload="auto" src="04.07/p2/基金-1.mp4"></video></div>
+    <div class="hero-card"><video muted loop playsinline autoplay preload="auto" src="04.07/p2/v2_03_办公室_养老.mp4"></video></div>
+    <div class="hero-card"><video muted loop playsinline autoplay preload="auto" src="04.07/p2/泰隆-315.mp4"></video></div>
+    <div class="hero-card"><video muted loop playsinline autoplay preload="auto" src="04.07/p2/国风-1.mp4"></video></div>
+    <div class="hero-card"><video muted loop playsinline autoplay preload="auto" src="04.07/p2/清明-1.mp4"></video></div>
+  </div>
+  <div class="vw-wall" id="p2Wall"></div>
+  <div class="vw-vignette" id="p2Vignette"></div>
+  <div class="number-overlay" id="p2Overlay">
+    <div class="overlay-tag">1月底至今</div>
+    <div class="overlay-numbers">
+      <span class="num-old">15%</span>
+      <span class="num-arrow">→</span>
+      <span class="num-new">60%</span>
+    </div>
+    <div class="overlay-sub">快速响应，完成交付，毛利率靠 AI 交付工作流实现</div>
+  </div>
+</section>
+
+<!-- ════════ P3 — 关键转变 ════════ -->
+<section class="slide p3">
+  <div class="slide-title"><span class="line">从被动响应需求</span><span class="line" style="color:var(--accent);">到主动影响需求</span></div>
+</section>
+
+<!-- ════════ P3b — 制作升级 ════════ -->
+<section class="slide p3b">
+  <div class="text-area">
+    <div class="tag">打铁还需自身硬</div>
+    <div class="slide-title">讲好故事，做出精品</div>
+    <div class="slide-subtitle">炫酷特效先抓住眼球，专业内容留住用户。从脚本到镜头到配音，每一步都导向精品</div>
+  </div>
+  <div class="vid-area">
+    <div class="vid-group">
+      <div class="vid-col"><video muted loop playsinline autoplay preload="auto" src="04.07/p4/2025.12.4-冰雪经济_c.mp4"></video><div class="vid-label">基金 · 实拍版</div></div>
+      <div class="vid-col"><video muted loop playsinline autoplay preload="auto" src="04.07/p4/冰雪经济-二创-户外_c.mp4"></video><div class="vid-label">基金 · AI户外版</div></div>
+    </div>
+    <div class="vid-group">
+      <div class="vid-col"><video muted loop playsinline autoplay preload="auto" src="04.07/p4/jimeng-6502_c.mp4"></video><div class="vid-label">中英人寿 · TVC</div></div>
+      <div class="vid-col"><video muted loop playsinline autoplay preload="auto" src="04.07/p4/jimeng-9853_c.mp4"></video><div class="vid-label">中英人寿 · 场景</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ════════ P3c — 主动推送 ════════ -->
+<section class="slide p3c">
+  <div class="slide-title"><span class="line">从被动接受热点</span><span class="line" style="color:var(--accent);">到主动推送内容</span></div>
+</section>
+
+<!-- ════════ P5 — 热点追踪器 ════════ -->
+<section class="slide p5 media-page">
+  <div class="tag">主动推送热点</div>
+  <div class="slide-title">蹭得快，更要蹭得好</div>
+  <div class="slide-subtitle">给每个长期客户定制热点追踪器，AI 学习品味，建议蹭什么、不蹭什么</div>
+  <div class="p5-images" style="display:flex;gap:16px;margin-top:32px;flex:1;min-height:0;">
+    <img src="04.07/p6/ScreenShot_2026-04-06_103312_521.png" style="flex:1;min-width:0;object-fit:contain;border-radius:12px;box-shadow:0 2px 20px rgba(0,0,0,0.08);">
+    <img src="04.07/p6/ScreenShot_2026-04-06_103405_664.png" style="flex:1;min-width:0;object-fit:contain;border-radius:12px;box-shadow:0 2px 20px rgba(0,0,0,0.08);">
+  </div>
+</section>
+
+<!-- ════════ P7 — Tada.AI ════════ -->
+<section class="slide p7">
+  <div class="demo-full" id="p7-demo">
+    <iframe src="demo-export/prompt-library-demo.html"></iframe>
+  </div>
+  <div class="title-reveal" id="p7-title">
+    <div class="tag">从内部经验到提效工具</div>
+    <div class="title">Tada.AI</div>
+  </div>
+</section>
+
+<!-- ════════ P8 — Sunrise 登录→快速生成 ════════ -->
+<section class="slide p8">
+  <div class="p8-frame interactive show" id="p8-login">
+    <iframe src="04.07/p8/ux-01-login.html"></iframe>
+  </div>
+  <div class="p8-frame" id="p8-quick">
+    <iframe src="04.07/p8/ux-02-quick.html"></iframe>
+  </div>
+</section>
+
+<!-- ════════ P9 — Seedance Demo ════════ -->
+<section class="slide p9">
+  <iframe src="04.07/p8/seedance-demo.html"></iframe>
+</section>
+
+<!-- ════════ P10 — Sunrise 路线图 ════════ -->
+<section class="slide p10">
+  <div class="tag">Sunrise Roadmap</div>
+  <div class="slide-title" style="font-size:40px;">产品路线图</div>
+  <div class="timeline">
+    <div class="tl-phase current">
+      <div class="tl-label">当前版本</div>
+      <ul class="tl-items">
+        <li>AI 内容创作</li>
+        <li>Seedance 2.0</li>
+        <li>客户测试账号开放</li>
+      </ul>
+    </div>
+    <div class="tl-phase">
+      <div class="tl-label">下一版本</div>
+      <ul class="tl-items">
+        <li>提示词库</li>
+        <li>热点中心</li>
+        <li>模板广场</li>
+      </ul>
+    </div>
+    <div class="tl-phase">
+      <div class="tl-label">已在推进</div>
+      <ul class="tl-items">
+        <li>本地化部署</li>
+        <li>建信等客户</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ════════ P11 — Starry 引入 ════════ -->
+<section class="slide p11">
+  <div class="p11-text">
+    <div class="tag">另一个战场</div>
+    <div class="slide-title">模板需求最旺盛的<br>不是品牌，是代理人</div>
+    <div class="slide-subtitle">在即梦上，有保险代理人<br>已经开始用 AI 做短视频<br>@自己就能做同款——但远远不够</div>
+  </div>
+  <div class="p11-media" id="p11Media">
+    <img src="04.07/p11/IMG_2212.PNG">
+    <video src="04.07/p11/ScreenRecording_c.mp4" muted loop playsinline></video>
+  </div>
+</section>
+
+<!-- ════════ P12 — 一键做同款 ════════ -->
+<section class="slide p12">
+  <div class="p12-videos">
+    <div class="p12-video-wrap" id="p12v1">
+      <video src="04.07/p12/1_c.mp4" muted loop playsinline></video>
+    </div>
+    <div class="p12-video-wrap" id="p12v2">
+      <video src="04.07/p12/2_compressed.mp4" muted loop playsinline></video>
+    </div>
+    <div class="p12-video-wrap" id="p12v3">
+      <video src="04.07/p12/3_c.mp4" muted loop playsinline></video>
+    </div>
+    <div class="p12-video-wrap" id="p12v4">
+      <video src="04.07/p12/4_c.mp4" muted loop playsinline></video>
+    </div>
+  </div>
+  <div class="p12-finale" id="p12Left">
+    <div class="p12-finale-main">垂直专业内容的终极目标<br>代理人一键做同款</div>
+    <div class="p12-finale-brand">Starry.AI</div>
+  </div>
+</section>
+
+<!-- ════════ P13 — Starry demo + compare + steps ════════ -->
+<section class="slide p13">
+  <div class="p13-phone" id="p13Phone">
+    <div class="p13-phone-shell">
+      <div class="p13-phone-notch"></div>
+      <div class="p13-phone-screen">
+        <iframe src="04.07/p13/starry.ai-2/kos-mobile-ui.html"></iframe>
+      </div>
+    </div>
+  </div>
+  <div class="p13-right">
+    <div class="p13-compare" id="p13Compare">
+      <div class="p13-card">
+        <div class="p13-card-name">即梦</div>
+        <div class="p13-card-item"><span class="x">✗</span>没有保险提示词</div>
+        <div class="p13-card-item"><span class="x">✗</span>不能一键做 15s+</div>
+        <div class="p13-card-item"><span class="x">✗</span>做不了1分半专业内容</div>
+      </div>
+      <div class="p13-card highlight">
+        <div class="p13-card-name">Starry ✦</div>
+        <div class="p13-card-item"><span class="ck">✓</span>垂直行业提示词</div>
+        <div class="p13-card-item"><span class="ck">✓</span>一键生成长视频</div>
+        <div class="p13-card-item"><span class="ck">✓</span>上传照片+声音 → 1分钟视频</div>
+      </div>
+    </div>
+    <div class="p13-steps" id="p13Steps">
+      <div class="p13-steps-label">三步出片</div>
+      <div class="p13-steps-row">
+        <div class="p13-step">
+          <div class="p13-step-icon">📸</div>
+          <span class="p13-step-num">STEP 1</span>
+          <div class="p13-step-text">上传几张照片</div>
+        </div>
+        <div class="p13-step-arrow">→</div>
+        <div class="p13-step">
+          <div class="p13-step-icon">🎙️</div>
+          <span class="p13-step-num">STEP 2</span>
+          <div class="p13-step-text">录一段声音</div>
+        </div>
+        <div class="p13-step-arrow">→</div>
+        <div class="p13-step">
+          <div class="p13-step-icon">🎬</div>
+          <span class="p13-step-num">STEP 3</span>
+          <div class="p13-step-text">生成1分钟长视频</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ════════ P14 — 壁垒 ════════ -->
+<section class="slide p14">
+  <div>
+    <div class="quote-accent">
+      <span class="line">从交付中长出来的经验</span>
+      <span class="line">是做垂直专业内容的壁垒</span>
+    </div>
+  </div>
+  <div class="p14-logos">
+    <div class="p14-logo" id="p14LogoTada">
+      <div class="p14-logo-icon tada">✦</div>
+      <div class="p14-logo-text">Tada<span class="dot-tada">.</span>AI</div>
+    </div>
+    <div class="p14-logo" id="p14LogoSunrise">
+      <div class="p14-logo-icon sunrise">✦</div>
+      <div class="p14-logo-text">Sunrise<span class="dot-sunrise">.</span>AI</div>
+    </div>
+    <div class="p14-logo" id="p14LogoStarry">
+      <div class="p14-logo-icon starry">✦</div>
+      <div class="p14-logo-text">Starry<span class="dot-starry">.</span>AI</div>
+    </div>
+  </div>
+</section>
+
+<!-- ════════ P15 — 结束 ════════ -->
+<section class="slide p15">
+  <div class="slide-title">谢谢</div>
+  <div class="slide-subtitle" style="text-align:center;margin:16px auto 0;">AI 新媒体工作室</div>
+</section>
+
+<!-- ── Page counter ── -->
+<div class="page-counter"><span id="current-page">1</span> / 15</div>
+
+<!-- ── Nav dots ── -->
+<div class="nav-dots" id="nav-dots"></div>
+
+<script>
+(function() {
+  const slides = document.querySelectorAll('.slide');
+  const total = slides.length;
+  const counter = document.getElementById('current-page');
+  const dotsContainer = document.getElementById('nav-dots');
+  let current = 0;
+  let transitioning = false;
+
+  // ── P2 Video Wall ──
+  const P2_INDEX = 1;
+  let p2Step = 0; // 0=idle, 1=wall shown, 2=numbers shown
+  let p2Timeouts = [];
+  const p2HeroRow = document.getElementById('p2HeroRow');
+  const p2HeroCards = p2HeroRow.querySelectorAll('.hero-card');
+  const p2Wall = document.getElementById('p2Wall');
+  const p2Vignette = document.getElementById('p2Vignette');
+  const p2Overlay = document.getElementById('p2Overlay');
+
+  const PORTRAIT = [
+    '04.07/p2/贵烟-热点.mp4','04.07/p2/v2_03_办公室_养老_c.mp4','04.07/p2/基金-1.mp4',
+    '04.07/p2/国风-1_c.mp4','04.07/p2/v2_10_校园_第一份_c.mp4','04.07/p2/公司走廊_c.mp4',
+    '04.07/p2/清明-1.mp4','04.07/p2/银联-1_c.mp4','04.07/p2/贵烟-节气_c.mp4',
+    '04.07/p2/热梗-1_c.mp4','04.07/p2/v2_04_书房_寿险_c.mp4','04.07/p2/脱口秀场景mp4_c.mp4',
+    '04.07/p2/国寿-节气_c.mp4','04.07/p2/银联_c.mp4','04.07/p2/贵烟1_c.mp4',
+    '04.07/p2/泰隆-315.mp4','04.07/p2/开工_c.mp4','04.07/p2/车内场景_c.mp4',
+    '04.07/p2/jimeng-2026-03-16-4387-老人认真的看着手里的纸，看了3秒后，向左转身走到门前的躺椅前，过程中一直看着手上..._c.mp4',
+    '04.07/p2/jimeng-2026-03-13-8564-皮克斯风格3D动画。9_16竖版。  首帧是图一，角色和图二保持一致 Q版3D熊..._c.mp4',
+    '04.07/p2/jimeng-2026-03-24-5515-过渡到。subtle rod tip vibration, gentle boa..._c.mp4',
+    '04.07/p2/jimeng-2026-03-24-8631-正上方垂直俯拍，角色在白色宽坡刻出连续S形大转弯，鲜艳服色与白雪强对比。多个镜头..._c.mp4',
+    '04.07/p2/jimeng-2026-03-27-1455-医院场景，医院办公室。女医生，高马尾发型。口播："今天咱们专门聊一聊咱们中老年人..._c.mp4',
+    '04.07/p2/jimeng-2026-03-28-2260-赛博朋克科技实验室，先是角色研究员戴上手套的特写。随后全景镜头，戴着手套的角色从..._c.mp4',
+  ];
+  const LANDSCAPE = [
+    '04.07/p2/第一部分-猝死2_c.mp4','04.07/p2/喝茶 demo_c.mp4','04.07/p2/video_20260310_142701 (1)_c.mp4',
+  ];
+
+  function buildP2Wall() {
+    if (p2Wall.children.length > 0) return;
+    const rows = 4;
+    const CELL_W_P = 120, CELL_W_L = 213;
+    let pIdx = 0, lIdx = 0;
+    for (let r = 0; r < rows; r++) {
+      const row = document.createElement('div');
+      row.className = 'vw-row';
+      let usedWidth = 0;
+      const maxWidth = window.innerWidth + 20;
+      let colInRow = 0;
+      while (usedWidth < maxWidth) {
+        const cell = document.createElement('div');
+        cell.className = 'vw-cell';
+        const vid = document.createElement('video');
+        vid.muted = true; vid.playsInline = true; vid.autoplay = true; vid.loop = true;
+        vid.preload = 'auto';
+        const useLandscape = (colInRow > 0 && colInRow % 5 === (r % 3 + 2)) && lIdx < LANDSCAPE.length * 4;
+        if (useLandscape) {
+          vid.src = LANDSCAPE[lIdx % LANDSCAPE.length];
+          cell.style.width = CELL_W_L + 'px'; cell.style.flexShrink = '0';
+          usedWidth += CELL_W_L + 4; lIdx++;
+        } else {
+          vid.src = PORTRAIT[pIdx % PORTRAIT.length];
+          cell.style.width = CELL_W_P + 'px'; cell.style.flexShrink = '0';
+          usedWidth += CELL_W_P + 4; pIdx++;
+        }
+        vid.addEventListener('loadedmetadata', () => { vid.currentTime = Math.random() * vid.duration; });
+        cell.appendChild(vid); row.appendChild(cell); colInRow++;
+      }
+      p2Wall.appendChild(row);
+    }
+  }
+
+  function startP2() {
+    p2Step = 1;
+    // Phase 1: stagger hero cards
+    p2HeroCards.forEach((card, i) => {
+      const t = setTimeout(() => {
+        card.style.opacity = '1';
+        card.style.transform = 'scale(1) translateY(0)';
+      }, 200 + i * 180);
+      p2Timeouts.push(t);
+    });
+    // Phase 2: shrink heroes + reveal wall
+    buildP2Wall();
+    const t2 = setTimeout(() => {
+      p2HeroRow.style.transform = 'translate(-50%, -50%) scale(0.3)';
+      p2HeroRow.style.opacity = '0';
+      p2Wall.style.opacity = '1';
+      const cells = p2Wall.querySelectorAll('.vw-cell');
+      cells.forEach((cell) => {
+        const delay = Math.random() * 800;
+        const t = setTimeout(() => {
+          cell.style.opacity = '1';
+          cell.style.transform = 'scale(1)';
+          cell.querySelector('video')?.play().catch(() => {});
+        }, delay);
+        p2Timeouts.push(t);
+      });
+    }, 2800);
+    p2Timeouts.push(t2);
+  }
+
+  function showP2Numbers() {
+    p2Step = 2;
+    p2Vignette.style.opacity = '1';
+    p2Overlay.style.opacity = '1';
+  }
+
+  function hideP2Numbers() {
+    p2Step = 1;
+    p2Vignette.style.opacity = '0';
+    p2Overlay.style.opacity = '0';
+  }
+
+  function resetP2() {
+    p2Timeouts.forEach(t => clearTimeout(t));
+    p2Timeouts = [];
+    p2Step = 0;
+    p2HeroRow.style.transform = 'translate(-50%, -50%)';
+    p2HeroRow.style.opacity = '1';
+    p2HeroCards.forEach(card => {
+      card.style.opacity = '0';
+      card.style.transform = 'scale(0.6) translateY(40px)';
+    });
+    p2Wall.style.opacity = '0';
+    p2Wall.querySelectorAll('.vw-cell').forEach(cell => {
+      cell.style.opacity = '0';
+      cell.style.transform = 'scale(0.7)';
+    });
+    p2Vignette.style.opacity = '0';
+    p2Overlay.style.opacity = '0';
+  }
+
+  // ── P7 Tada Title Reveal ──
+  const P7_INDEX = 6;
+  const p7Demo = document.getElementById('p7-demo');
+  const p7Title = document.getElementById('p7-title');
+  let p7Timer = null;
+
+  function startP7Reveal() {
+    clearTimeout(p7Timer);
+    p7Timer = setTimeout(() => {
+      p7Demo.classList.add('dimmed');
+      p7Title.classList.add('show');
+    }, 10000);
+  }
+
+  function resetP7() {
+    clearTimeout(p7Timer);
+    p7Timer = null;
+    p7Demo.classList.remove('dimmed');
+    p7Title.classList.remove('show');
+  }
+
+  // ── P8 Login → Quick Generate ──
+  const P8_INDEX = 7;
+  const p8Login = document.getElementById('p8-login');
+  const p8Quick = document.getElementById('p8-quick');
+
+  function resetP8() {
+    p8Login.classList.add('show', 'interactive');
+    p8Quick.classList.remove('show');
+  }
+
+  // ── P9 Seedance Demo — data overlay on spacebar ──
+  const P9_INDEX = 8;
+  let p9Step = 0; // 0=demo playing, 1=data shown
+  const p9Iframe = document.querySelector('.p9 iframe');
+
+  function showP9Data() {
+    p9Step = 1;
+    p9Iframe.contentWindow.postMessage('show-data', '*');
+  }
+  function hideP9Data() {
+    p9Step = 0;
+    p9Iframe.contentWindow.postMessage('hide-data', '*');
+  }
+  function resetP9() {
+    p9Step = 0;
+    try { p9Iframe.contentWindow.postMessage('hide-data', '*'); } catch(e) {}
+  }
+
+  // ── P11 Starry — media reveal on spacebar ──
+  const P11_INDEX = 10;
+  let p11Step = 0; // 0=text only, 1=media shown
+  const p11Media = document.getElementById('p11Media');
+  const p11Video = p11Media.querySelector('video');
+
+  function showP11Media() {
+    p11Step = 1;
+    p11Media.classList.add('show');
+    p11Video.play().catch(() => {});
+  }
+  function resetP11() {
+    p11Step = 0;
+    p11Media.classList.remove('show');
+    p11Video.pause();
+    p11Video.currentTime = 0;
+  }
+
+  // ── P12 — 一键做同款，逐步出现 ──
+  const P12_INDEX = 11;
+  let p12Step = 0; // 0=blank, 1=v1, 2=v2, 3=v3, 4=v4, 5=left text
+  const p12Wraps = [
+    document.getElementById('p12v1'),
+    document.getElementById('p12v2'),
+    document.getElementById('p12v3'),
+    document.getElementById('p12v4'),
+  ];
+  const p12Left = document.getElementById('p12Left');
+
+  function advanceP12() {
+    if (p12Step < 4) {
+      const wrap = p12Wraps[p12Step];
+      wrap.classList.add('show');
+      wrap.querySelector('video').play().catch(() => {});
+      p12Step++;
+    } else if (p12Step === 4) {
+      p12Left.classList.add('show');
+      p12Step++;
+    }
+  }
+  function retreatP12() {
+    if (p12Step === 5) {
+      p12Left.classList.remove('show');
+      p12Step--;
+    } else if (p12Step > 0) {
+      p12Step--;
+      const wrap = p12Wraps[p12Step];
+      wrap.classList.remove('show');
+      const vid = wrap.querySelector('video');
+      vid.pause(); vid.currentTime = 0;
+    }
+  }
+  function resetP12() {
+    p12Step = 0;
+    p12Left.classList.remove('show');
+    p12Wraps.forEach(w => {
+      w.classList.remove('show');
+      const vid = w.querySelector('video');
+      vid.pause(); vid.currentTime = 0;
+    });
+  }
+
+  // ── P13 — Starry demo + compare + steps ──
+  const P13_INDEX = 12;
+  let p13Step = 0; // 0=blank, 1=phone, 2=compare, 3=steps
+  const p13Phone = document.getElementById('p13Phone');
+  const p13Compare = document.getElementById('p13Compare');
+  const p13Steps = document.getElementById('p13Steps');
+
+  function advanceP13() {
+    if (p13Step === 0) { p13Phone.classList.add('show'); p13Step++; }
+    else if (p13Step === 1) { p13Compare.classList.add('show'); p13Step++; }
+    else if (p13Step === 2) { p13Steps.classList.add('show'); p13Step++; }
+  }
+  function retreatP13() {
+    if (p13Step === 3) { p13Steps.classList.remove('show'); p13Step--; }
+    else if (p13Step === 2) { p13Compare.classList.remove('show'); p13Step--; }
+    else if (p13Step === 1) { p13Phone.classList.remove('show'); p13Step--; }
+  }
+  function resetP13() {
+    p13Step = 0;
+    p13Phone.classList.remove('show');
+    p13Compare.classList.remove('show');
+    p13Steps.classList.remove('show');
+  }
+
+  // ── P14 — Logos reveal ──
+  const P14_INDEX = 13;
+  let p14Step = 0; // 0=text shown, 1=tada, 2=sunrise, 3=starry
+  const p14Logos = [
+    document.getElementById('p14LogoTada'),
+    document.getElementById('p14LogoSunrise'),
+    document.getElementById('p14LogoStarry'),
+  ];
+
+  function advanceP14() {
+    if (p14Step < 3) {
+      p14Logos[p14Step].classList.add('show');
+      p14Step++;
+    }
+  }
+  function retreatP14() {
+    if (p14Step > 0) {
+      p14Step--;
+      p14Logos[p14Step].classList.remove('show');
+    }
+  }
+  function resetP14() {
+    p14Step = 0;
+    p14Logos.forEach(l => l.classList.remove('show'));
+  }
+  // Disable P8 iframes by default (re-enabled when P8 is active)
+  document.querySelectorAll('.p8 iframe').forEach(f => f.style.pointerEvents = 'none');
+
+  for (let i = 0; i < total; i++) {
+    const dot = document.createElement('button');
+    dot.className = 'nav-dot' + (i === 0 ? ' active' : '');
+    dot.addEventListener('click', () => goTo(i));
+    dotsContainer.appendChild(dot);
+  }
+  const dots = dotsContainer.querySelectorAll('.nav-dot');
+
+  // ── Navigation ──
+  function advance() {
+    if (current === P2_INDEX) {
+      if (p2Step === 0) { startP2(); return; }
+      if (p2Step === 1) { showP2Numbers(); return; }
+    }
+    if (current === P9_INDEX) {
+      if (p9Step === 0) { showP9Data(); return; }
+    }
+    if (current === P11_INDEX) {
+      if (p11Step === 0) { showP11Media(); return; }
+    }
+    if (current === P12_INDEX) {
+      if (p12Step < 5) { advanceP12(); return; }
+    }
+    if (current === P13_INDEX) {
+      if (p13Step < 3) { advanceP13(); return; }
+    }
+    if (current === P14_INDEX) {
+      if (p14Step < 3) { advanceP14(); return; }
+    }
+    goTo(current + 1);
+  }
+
+  function retreat() {
+    if (current === P2_INDEX) {
+      if (p2Step === 2) { hideP2Numbers(); return; }
+      if (p2Step === 1) { resetP2(); return; }
+    }
+    if (current === P9_INDEX) {
+      if (p9Step === 1) { hideP9Data(); return; }
+    }
+    if (current === P11_INDEX) {
+      if (p11Step === 1) { resetP11(); return; }
+    }
+    if (current === P12_INDEX) {
+      if (p12Step > 0) { retreatP12(); return; }
+    }
+    if (current === P13_INDEX) {
+      if (p13Step > 0) { retreatP13(); return; }
+    }
+    if (current === P14_INDEX) {
+      if (p14Step > 0) { retreatP14(); return; }
+    }
+    goTo(current - 1);
+  }
+
+  function goTo(index) {
+    if (index < 0 || index >= total || index === current || transitioning) return;
+    transitioning = true;
+    if (current === P2_INDEX) resetP2();
+    if (current === P7_INDEX) resetP7();
+    if (current === P8_INDEX) resetP8();
+    if (current === P9_INDEX) resetP9();
+    if (current === P11_INDEX) resetP11();
+    if (current === P12_INDEX) resetP12();
+    if (current === P13_INDEX) resetP13();
+    if (current === P14_INDEX) resetP14();
+    slides[current].classList.remove('active');
+    dots[current].classList.remove('active');
+    slides[index].classList.add('active');
+    dots[index].classList.add('active');
+    current = index;
+    counter.textContent = current + 1;
+    if (current === P7_INDEX) startP7Reveal();
+    if (current === P9_INDEX) {
+      p9Iframe.contentWindow.postMessage('start-demo', '*');
+    }
+    // P8 iframe pointer-events: only p8-login is interactive when on P8
+    if (index !== P8_INDEX) {
+      document.querySelectorAll('.p8 iframe').forEach(f => f.style.pointerEvents = 'none');
+    } else {
+      p8Login.querySelector('iframe').style.pointerEvents = 'auto';
+      p8Quick.querySelector('iframe').style.pointerEvents = 'none';
+    }
+    setTimeout(() => { transitioning = false; }, 600);
+  }
+
+  // P8 login → auto advance to P9
+  window.addEventListener('message', (e) => {
+    if (e.data === 'p8-login-done') {
+      p8Login.classList.remove('show', 'interactive');
+      p8Quick.classList.add('show');
+      document.body.focus();
+    }
+  });
+
+  // Keyboard
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'ArrowRight' || e.key === 'ArrowDown' || e.key === ' ') {
+      e.preventDefault(); advance();
+    } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+      e.preventDefault(); retreat();
+    }
+  });
+
+  // Trackpad
+  let lastWheelTime = 0;
+  document.addEventListener('wheel', (e) => {
+    e.preventDefault();
+    const now = Date.now();
+    if (now - lastWheelTime < 800) return;
+    if (Math.abs(e.deltaY) < 15) return;
+    lastWheelTime = now;
+    if (e.deltaY > 0) advance(); else retreat();
+  }, { passive: false });
+
+  // Touch
+  let touchStartY = 0;
+  document.addEventListener('touchstart', (e) => {
+    touchStartY = e.touches[0].clientY;
+  }, { passive: true });
+  document.addEventListener('touchend', (e) => {
+    const dy = touchStartY - e.changedTouches[0].clientY;
+    if (Math.abs(dy) > 50) {
+      if (dy > 0) advance(); else retreat();
+    }
+  }, { passive: true });
+})();
+</script>
+</body>
+</html>

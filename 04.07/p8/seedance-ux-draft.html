@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sunrise.AI — 快速生成（UX 稿）</title>
+<style>
+:root {
+  --accent: #374151; --accent-hover: #1f2937; --accent-bg: rgba(55,65,81,0.06);
+  --gold: #d97706; --gold-hover: #b45309; --gold-bg: rgba(217,119,6,0.08);
+  --bg: #fafaf9;
+  --surface: rgba(245,243,239,0.35); --surface-card: rgba(255,255,255,0.65); --surface-input: rgba(255,255,255,0.5);
+  --border: rgba(0,0,0,0.06); --border-card: rgba(255,255,255,0.7); --border-input: rgba(0,0,0,0.08);
+  --text: #1c1917; --text2: #57534e; --text3: #a8a29e;
+  --radius: 14px; --radius-sm: 10px; --radius-btn: 980px; --radius-xs: 6px;
+  --shadow-card: 0 1px 3px rgba(0,0,0,0.04);
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: -apple-system, 'PingFang SC', 'Helvetica Neue', sans-serif;
+  background: linear-gradient(135deg, #fafaf9 0%, #f0ede8 30%, #f2f0ec 60%, #fafaf9 100%);
+  color: var(--text); min-height: 100vh; display: flex; position: relative; overflow: hidden;
+}
+body::before {
+  content: ''; position: fixed; top: -20%; right: -10%; width: 600px; height: 600px;
+  background: radial-gradient(circle, rgba(217,119,6,0.04) 0%, transparent 70%);
+  pointer-events: none; z-index: 0;
+}
+
+/* ── Sidebar ── */
+.sidebar {
+  width: 220px; background: var(--surface);
+  backdrop-filter: blur(40px) saturate(180%); -webkit-backdrop-filter: blur(40px) saturate(180%);
+  border-right: 1px solid var(--border);
+  display: flex; flex-direction: column; flex-shrink: 0; height: 100vh;
+  position: sticky; top: 0; z-index: 10;
+}
+.sidebar-logo { padding: 20px; display: flex; align-items: center; gap: 10px; }
+.logo-icon {
+  width: 32px; height: 32px;
+  background: linear-gradient(135deg, #ea580c 0%, #f59e0b 50%, #fbbf24 100%);
+  border-radius: 10px; display: flex; align-items: center; justify-content: center;
+  font-size: 16px; color: #fff; font-weight: 700;
+  box-shadow: 0 2px 8px rgba(234,88,12,0.3);
+}
+.logo-text { font-size: 18px; font-weight: 700; letter-spacing: 1px; }
+.logo-text .dot { color: var(--gold); }
+
+.sidebar-nav { flex: 1; padding: 8px; }
+.nav-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 14px; border-radius: var(--radius-sm); margin-bottom: 3px;
+  color: var(--text2); background: transparent; font-weight: 400;
+  font-size: 15px; transition: all .15s; cursor: pointer;
+}
+.nav-item:hover { background: rgba(0,0,0,0.03); }
+.nav-item.active { background: rgba(217,119,6,0.12); color: #92400e; font-weight: 500; }
+.nav-item .icon { width: 18px; text-align: center; }
+.nav-divider { height: 1px; background: var(--border); margin: 8px 14px; }
+.nav-item.admin { font-size: 14px; color: var(--text3); }
+
+.sidebar-user {
+  padding: 14px; border-top: 1px solid var(--border);
+  display: flex; align-items: center; gap: 10px;
+}
+.user-avatar {
+  width: 32px; height: 32px; border-radius: 50%; background: var(--gold);
+  display: flex; align-items: center; justify-content: center;
+  color: #fff; font-size: 13px; font-weight: 600;
+}
+.user-name { font-size: 14px; font-weight: 500; }
+.user-points { font-size: 12px; color: var(--gold); font-weight: 500; }
+
+/* ── Main ── */
+.main { flex: 1; padding: 24px; overflow-y: auto; height: 100vh; position: relative; z-index: 1; }
+
+.page-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; }
+.page-title { font-size: 24px; font-weight: 700; }
+.points-badge {
+  background: var(--gold-bg); color: var(--gold);
+  padding: 6px 14px; border-radius: var(--radius-btn);
+  font-size: 13px; font-weight: 600;
+}
+
+/* ── 生成区域 ── */
+.gen-section {
+  background: var(--surface-card);
+  backdrop-filter: blur(40px) saturate(180%); -webkit-backdrop-filter: blur(40px) saturate(180%);
+  border: 1px solid var(--border-card); border-radius: var(--radius);
+  box-shadow: var(--shadow-card); padding: 24px;
+}
+
+.prompt-area textarea {
+  width: 100%; height: 100px; padding: 12px 14px; font-size: 15px; font-family: inherit;
+  background: var(--surface-input); border: 1px solid var(--border-input);
+  border-radius: var(--radius-sm); color: var(--text); outline: none;
+  resize: vertical; transition: border-color 0.15s; line-height: 1.6;
+}
+.prompt-area textarea::placeholder { color: var(--text3); }
+.prompt-area textarea:focus { border-color: var(--gold); }
+
+/* 类型 Tab */
+.type-tabs { display: flex; gap: 6px; margin-top: 16px; }
+.type-tab {
+  padding: 7px 18px; border-radius: var(--radius-btn); font-size: 14px;
+  cursor: pointer; transition: all .15s; border: none; font-family: inherit;
+  background: var(--accent-bg); color: var(--text2);
+}
+.type-tab:hover { background: rgba(55,65,81,0.1); }
+.type-tab.active { background: var(--accent); color: #fff; }
+
+/* 模型卡片 */
+.section-label { font-size: 13px; font-weight: 500; color: var(--text2); margin: 16px 0 8px; }
+.model-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+.model-card {
+  background: var(--surface-input); border: 1.5px solid var(--border-card);
+  border-radius: var(--radius-sm); padding: 12px; cursor: pointer;
+  transition: all .15s; position: relative;
+}
+.model-card:hover { box-shadow: 0 2px 8px rgba(0,0,0,0.06); transform: translateY(-1px); }
+.model-card.selected { border: 2px solid var(--gold); background: var(--gold-bg); }
+
+.model-top { display: flex; justify-content: space-between; align-items: flex-start; }
+.model-name { font-size: 14px; font-weight: 600; color: var(--text); }
+.model-points {
+  background: var(--gold-bg); color: var(--gold);
+  padding: 2px 8px; border-radius: var(--radius-xs);
+  font-size: 12px; font-weight: 600; white-space: nowrap;
+}
+.model-desc { font-size: 12px; color: var(--text3); margin-top: 4px; }
+.model-tags { display: flex; gap: 4px; margin-top: 6px; flex-wrap: wrap; }
+.model-tag {
+  background: var(--gold-bg); color: var(--gold);
+  padding: 1px 6px; border-radius: var(--radius-xs);
+  font-size: 11px;
+}
+
+/* 选项行 */
+.options-row { display: flex; gap: 16px; margin-top: 16px; align-items: flex-end; }
+.option-group label { display: block; font-size: 13px; color: var(--text2); font-weight: 500; margin-bottom: 4px; }
+.option-group select {
+  padding: 8px 12px; font-size: 13px; font-family: inherit;
+  background: var(--surface-input); border: 1px solid var(--border-input);
+  border-radius: var(--radius-sm); color: var(--text); outline: none;
+}
+.option-group select:focus { border-color: var(--gold); }
+
+/* 上传区 */
+.ref-upload {
+  border: 2px dashed var(--border-input); border-radius: var(--radius-sm);
+  padding: 20px; text-align: center; cursor: pointer; transition: all .15s;
+  background: var(--surface-input);
+}
+.ref-upload:hover { border-color: var(--gold); background: var(--gold-bg); }
+.ref-upload .upload-icon { font-size: 24px; margin-bottom: 4px; }
+.ref-upload .upload-text { font-size: 12px; color: var(--text3); }
+.ref-upload .upload-hint { font-size: 11px; color: var(--text3); margin-top: 2px; }
+
+/* 底部 */
+.gen-footer {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--border);
+}
+.cost-preview { font-size: 14px; color: var(--text2); }
+.cost-preview .cost-num { color: var(--gold); font-weight: 700; font-size: 18px; }
+.btn-generate {
+  padding: 10px 32px; font-size: 15px; font-weight: 600; font-family: inherit;
+  color: #fff; background: var(--accent); border: none;
+  border-radius: var(--radius-btn); cursor: pointer; transition: all .15s;
+}
+.btn-generate:hover { background: var(--accent-hover); transform: translateY(-1px); }
+</style>
+</head>
+<body>
+
+<!-- Sidebar -->
+<div class="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-icon">✦</div>
+    <div class="logo-text">Sunrise<span class="dot">.</span>AI</div>
+  </div>
+  <nav class="sidebar-nav">
+    <div class="nav-item"><span class="icon">📋</span>模板广场</div>
+    <div class="nav-item active"><span class="icon">⚡</span>快速生成</div>
+    <div class="nav-item"><span class="icon">🕐</span>我的视频</div>
+    <div class="nav-item"><span class="icon">👤</span>品牌形象</div>
+    <div class="nav-item"><span class="icon">📊</span>数据看板</div>
+    <div class="nav-divider"></div>
+    <div class="nav-item admin"><span class="icon">⚙️</span>模板管理</div>
+    <div class="nav-item admin"><span class="icon">👥</span>成员管理</div>
+  </nav>
+  <div class="sidebar-user">
+    <div class="user-avatar">草</div>
+    <div>
+      <div class="user-name">小草</div>
+      <div class="user-points">剩余 8,753 点</div>
+    </div>
+  </div>
+</div>
+
+<!-- Main -->
+<div class="main">
+  <div class="page-header">
+    <div class="page-title">快速生成</div>
+    <div class="points-badge">剩余 8,753 点</div>
+  </div>
+
+  <div class="gen-section">
+    <!-- 提示词输入 -->
+    <div class="prompt-area">
+      <textarea placeholder="输入文字描述，AI 帮你生成图片、视频或配音..."></textarea>
+    </div>
+
+    <!-- 类型 Tab -->
+    <div class="type-tabs">
+      <button class="type-tab" onclick="switchType('image', this)">图片</button>
+      <button class="type-tab active" onclick="switchType('video', this)">视频</button>
+      <button class="type-tab" onclick="switchType('audio', this)">音频</button>
+    </div>
+
+    <!-- 模型选择 -->
+    <div class="section-label">选择模型</div>
+
+    <!-- 视频模型（默认展示） -->
+    <div class="model-grid" id="grid-video">
+      <div class="model-card selected" id="card-sd20">
+        <div class="model-top">
+          <div class="model-name">Seedance 2.0</div>
+          <div class="model-points">18 点/5s</div>
+        </div>
+        <div class="model-desc">最新旗舰，画质+动态天花板</div>
+        <div class="model-tags">
+          <span class="model-tag" style="background:rgba(220,38,38,0.08);color:#dc2626">NEW</span>
+          <span class="model-tag">品牌大片</span>
+          <span class="model-tag">复杂运镜</span>
+          <span class="model-tag" style="background:rgba(22,163,74,0.08);color:#16a34a">有声</span>
+        </div>
+      </div>
+      <div class="model-card" id="card-sd20f">
+        <div class="model-top">
+          <div class="model-name">Seedance 2.0 Fast</div>
+          <div class="model-points">10 点/5s</div>
+        </div>
+        <div class="model-desc">2.0 同源，速度翻倍，不排队</div>
+        <div class="model-tags">
+          <span class="model-tag" style="background:rgba(220,38,38,0.08);color:#dc2626">NEW</span>
+          <span class="model-tag">日常内容</span>
+          <span class="model-tag">快速迭代</span>
+          <span class="model-tag" style="background:rgba(22,163,74,0.08);color:#16a34a">有声</span>
+        </div>
+      </div>
+      <div class="model-card">
+        <div class="model-top">
+          <div class="model-name">Wan 2.2 Fast</div>
+          <div class="model-points">2 点/5s</div>
+        </div>
+        <div class="model-desc">最便宜，快速出片</div>
+        <div class="model-tags"><span class="model-tag">快速预览</span><span class="model-tag">仅图生视频</span></div>
+      </div>
+      <div class="model-card">
+        <div class="model-top">
+          <div class="model-name">Seedance 1 Fast</div>
+          <div class="model-points">8 点/5s</div>
+        </div>
+        <div class="model-desc">性价比之选，速度快</div>
+        <div class="model-tags"><span class="model-tag">日常内容</span><span class="model-tag">快速迭代</span></div>
+      </div>
+      <div class="model-card">
+        <div class="model-top">
+          <div class="model-name">Kling v2.6</div>
+          <div class="model-points">9 点/5s</div>
+        </div>
+        <div class="model-desc">人脸一致性最强</div>
+        <div class="model-tags"><span class="model-tag">真人出镜</span><span class="model-tag">仅图生视频</span></div>
+      </div>
+      <div class="model-card">
+        <div class="model-top">
+          <div class="model-name">Seedance 1.5 Pro</div>
+          <div class="model-points">13 点/5s</div>
+        </div>
+        <div class="model-desc">指令理解强，时长灵活</div>
+        <div class="model-tags"><span class="model-tag">产品展示</span><span class="model-tag">复杂动作</span></div>
+      </div>
+      <div class="model-card">
+        <div class="model-top">
+          <div class="model-name">Kling 3.0</div>
+          <div class="model-points">25 点/5s</div>
+        </div>
+        <div class="model-desc">4K超清，15秒长视频</div>
+        <div class="model-tags"><span class="model-tag">高端品牌片</span><span class="model-tag">长视频</span></div>
+      </div>
+      <div class="model-card">
+        <div class="model-top">
+          <div class="model-name">Veo 3.1 Fast</div>
+          <div class="model-points">31 点/5s</div>
+        </div>
+        <div class="model-desc">电影级画质+原生音频</div>
+        <div class="model-tags"><span class="model-tag">品牌大片</span><span class="model-tag">音画同步</span></div>
+      </div>
+    </div>
+
+    <!-- 视频参数 -->
+    <div id="videoOptions">
+      <div class="options-row" style="margin-top:16px">
+        <div class="option-group">
+          <label>视频模式</label>
+          <select id="videoMode" onchange="onVideoModeChange()">
+            <option value="t2v">文生视频</option>
+            <option value="i2v">图生视频</option>
+            <option value="first_last_frame">首尾帧插值</option>
+            <option value="all_ref" selected>全能参考</option>
+          </select>
+        </div>
+        <div class="option-group">
+          <label>时长</label>
+          <select>
+            <option>5 秒</option>
+            <option>10 秒</option>
+          </select>
+        </div>
+        <div class="option-group">
+          <label>分辨率</label>
+          <select>
+            <option>720p</option>
+            <option selected>1080p</option>
+          </select>
+        </div>
+        <div class="option-group">
+          <label>音频</label>
+          <select>
+            <option selected>有声</option>
+            <option>无声</option>
+          </select>
+        </div>
+        <div class="option-group">
+          <label>生成数量</label>
+          <select>
+            <option>1 个</option>
+            <option>2 个</option>
+            <option>3 个</option>
+            <option>4 个</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- 上传区：三列 -->
+      <div id="videoRefArea" style="margin-top:12px">
+        <div style="display:flex;gap:12px" id="refUploadsRow">
+          <!-- 参考图片 -->
+          <div style="flex:1" id="refImageArea">
+            <label class="section-label" style="margin-top:0;margin-bottom:6px;display:block">参考图片</label>
+            <div class="ref-upload" id="refImageUpload">
+              <div class="upload-icon">🖼</div>
+              <div class="upload-text">上传参考图片</div>
+              <div class="upload-hint">支持 jpg / png / webp</div>
+            </div>
+          </div>
+          <!-- 参考视频 -->
+          <div style="flex:1" id="refVideoArea">
+            <label class="section-label" style="margin-top:0;margin-bottom:6px;display:block">参考视频</label>
+            <div class="ref-upload" id="refVideoUpload">
+              <div class="upload-icon">🎬</div>
+              <div class="upload-text">上传参考视频</div>
+              <div class="upload-hint">支持 mp4 / mov</div>
+            </div>
+          </div>
+          <!-- 参考音频 -->
+          <div style="flex:1" id="refAudioArea">
+            <label class="section-label" style="margin-top:0;margin-bottom:6px;display:block">参考音频</label>
+            <div class="ref-upload" id="refAudioUpload">
+              <div class="upload-icon">🎙</div>
+              <div class="upload-text">上传参考音频</div>
+              <div class="upload-hint">支持 mp3 / wav / m4a</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 底部 -->
+    <div class="gen-footer">
+      <div class="cost-preview">预计消耗 <span class="cost-num">18</span> 点</div>
+      <button class="btn-generate">生成</button>
+    </div>
+  </div>
+</div>
+
+<script>
+function switchType(type, btn) {
+  document.querySelectorAll('.type-tab').forEach(t => t.classList.remove('active'));
+  btn.classList.add('active');
+}
+
+function onVideoModeChange() {
+  const mode = document.getElementById('videoMode').value;
+  const imageArea = document.getElementById('refImageArea');
+  const videoArea = document.getElementById('refVideoArea');
+  const audioArea = document.getElementById('refAudioArea');
+  const refArea = document.getElementById('videoRefArea');
+
+  if (mode === 't2v') {
+    refArea.style.display = 'none';
+  } else if (mode === 'i2v') {
+    refArea.style.display = 'block';
+    imageArea.style.display = 'block';
+    videoArea.style.display = 'none';
+    audioArea.style.display = 'none';
+  } else if (mode === 'first_last_frame') {
+    refArea.style.display = 'block';
+    imageArea.style.display = 'block';
+    videoArea.style.display = 'none';
+    audioArea.style.display = 'none';
+    // 首尾帧模式下 label 改为"首帧图片"
+  } else if (mode === 'all_ref') {
+    refArea.style.display = 'block';
+    imageArea.style.display = 'block';
+    videoArea.style.display = 'block';
+    audioArea.style.display = 'block';
+  }
+}
+</script>
+</body>
+</html>

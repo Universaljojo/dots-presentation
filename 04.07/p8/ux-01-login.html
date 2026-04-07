@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sunrise.AI — 登录</title>
+<style>
+:root {
+  --accent: #374151;
+  --gold: #d97706;
+  --gold-hover: #b45309;
+  --gold-bg: rgba(217,119,6,0.08);
+  --surface-card: rgba(255,255,255,0.65);
+  --surface-input: rgba(255,255,255,0.5);
+  --border: rgba(0,0,0,0.06);
+  --border-input: rgba(0,0,0,0.08);
+  --border-card: rgba(255,255,255,0.7);
+  --text: #1c1917;
+  --text2: #57534e;
+  --text3: #a8a29e;
+  --error: #dc2626;
+  --radius: 14px;
+  --radius-sm: 10px;
+  --radius-btn: 980px;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: -apple-system, 'PingFang SC', 'Helvetica Neue', sans-serif;
+  color: var(--text);
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(180deg,
+    #fafaf9 0%, #fdf8f0 35%, #fef3e2 55%,
+    #fde9c8 72%, #fcd9a0 85%, #f9c96e 100%
+  );
+}
+
+body::before {
+  content: '';
+  position: fixed;
+  bottom: -30%; left: 50%;
+  transform: translateX(-50%);
+  width: 1200px; height: 800px;
+  background: radial-gradient(ellipse at center, rgba(251,191,36,0.25) 0%, rgba(249,115,22,0.12) 30%, rgba(234,88,12,0.06) 50%, transparent 75%);
+  pointer-events: none; z-index: 0;
+}
+body::after {
+  content: '';
+  position: fixed;
+  top: -10%; right: -5%;
+  width: 500px; height: 500px;
+  background: radial-gradient(circle, rgba(217,119,6,0.04) 0%, transparent 70%);
+  pointer-events: none; z-index: 0;
+}
+.sun-rays {
+  position: fixed; bottom: 0; left: 50%;
+  transform: translateX(-50%);
+  width: 100%; height: 60%;
+  background:
+    linear-gradient(175deg, transparent 48%, rgba(251,191,36,0.03) 49%, transparent 51%),
+    linear-gradient(170deg, transparent 48%, rgba(249,115,22,0.02) 49%, transparent 51%),
+    linear-gradient(183deg, transparent 48%, rgba(251,191,36,0.025) 49%, transparent 51%),
+    linear-gradient(188deg, transparent 48%, rgba(234,88,12,0.02) 49%, transparent 51%);
+  pointer-events: none; z-index: 0;
+}
+
+.login-container {
+  width: 420px;
+  position: relative;
+  z-index: 1;
+}
+
+/* Logo */
+.logo-area { text-align: center; margin-bottom: 28px; }
+.logo-icon {
+  width: 52px; height: 52px;
+  background: linear-gradient(135deg, #ea580c 0%, #f59e0b 50%, #fbbf24 100%);
+  border-radius: 14px;
+  display: inline-flex; align-items: center; justify-content: center;
+  font-size: 26px; color: #fff; font-weight: 700;
+  box-shadow: 0 4px 20px rgba(234,88,12,0.35);
+  margin-bottom: 14px;
+}
+.logo-text { font-size: 30px; font-weight: 700; letter-spacing: 0.5px; }
+.logo-text .dot { color: var(--gold); }
+.logo-tagline { font-size: 14px; color: var(--text3); margin-top: 4px; letter-spacing: 2px; }
+
+/* 卡片 */
+.card {
+  background: var(--surface-card);
+  backdrop-filter: blur(40px) saturate(180%);
+  -webkit-backdrop-filter: blur(40px) saturate(180%);
+  border: 1px solid var(--border-card);
+  border-radius: var(--radius);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.08);
+  padding: 32px;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Tabs */
+.tabs { display: flex; margin-bottom: 28px; border-bottom: 1px solid var(--border); }
+.tab {
+  flex: 1; padding: 12px 0; text-align: center;
+  font-size: 15px; font-weight: 500; color: var(--text3);
+  cursor: pointer; border: none; border-bottom: 2px solid transparent;
+  transition: all 0.2s; background: none; font-family: inherit;
+}
+.tab:hover { color: var(--text2); }
+.tab.active { color: var(--gold); border-bottom-color: var(--gold); }
+
+/* 表单 */
+.form-group { margin-bottom: 18px; }
+.form-label { display: block; font-size: 13px; font-weight: 500; color: var(--text2); margin-bottom: 6px; }
+.form-input {
+  width: 100%; padding: 11px 14px; font-size: 15px; font-family: inherit;
+  background: var(--surface-input);
+  backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--border-input); border-radius: var(--radius-sm);
+  color: var(--text); outline: none; transition: border-color 0.15s;
+}
+.form-input::placeholder { color: var(--text3); }
+.form-input:focus { border-color: var(--gold); }
+.form-hint { font-size: 12px; color: var(--text3); margin-top: 4px; }
+.invite-input { letter-spacing: 6px; text-align: center; font-size: 18px; font-weight: 600; }
+
+/* 按钮 */
+.btn-primary {
+  width: 100%; padding: 12px 24px; font-size: 15px; font-weight: 600;
+  font-family: inherit; color: #fff;
+  background: linear-gradient(135deg, #ea580c 0%, #d97706 50%, #f59e0b 100%);
+  border: none; border-radius: var(--radius-btn); cursor: pointer;
+  transition: all 0.2s; margin-top: 8px;
+  box-shadow: 0 2px 12px rgba(217,119,6,0.3);
+}
+.btn-primary:hover { transform: translateY(-1px); box-shadow: 0 4px 16px rgba(217,119,6,0.4); }
+.btn-primary:active { transform: translateY(0); }
+
+.divider {
+  display: flex; align-items: center; gap: 12px; margin: 20px 0;
+  font-size: 12px; color: var(--text3);
+}
+.divider::before, .divider::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+
+.pwd-strength { display: flex; gap: 4px; margin-top: 6px; }
+.pwd-bar { flex: 1; height: 3px; border-radius: 2px; background: rgba(0,0,0,0.06); transition: background 0.2s; }
+.pwd-bar.active-weak { background: var(--error); }
+.pwd-bar.active-mid { background: var(--gold); }
+.pwd-bar.active-strong { background: #16a34a; }
+
+.page { display: none; }
+.page.active { display: block; }
+.footer-text { text-align: center; font-size: 13px; color: var(--text3); margin-top: 16px; }
+
+/* Powered by */
+.powered-by { text-align: center; margin-top: 24px; font-size: 12px; color: var(--text3); letter-spacing: 0.5px; opacity: 0.7; }
+.powered-by span { color: var(--gold); font-weight: 500; }
+
+/* ── 登录成功 → 格言过渡动效 ── */
+.quote-overlay {
+  position: fixed; inset: 0; z-index: 200;
+  display: flex; align-items: center; justify-content: center;
+  background: linear-gradient(180deg,
+    #fafaf9 0%, #fdf8f0 35%, #fef3e2 55%,
+    #fde9c8 72%, #fcd9a0 85%, #f9c96e 100%
+  );
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.6s ease;
+}
+.quote-overlay.visible {
+  opacity: 1;
+  pointer-events: auto;
+}
+.quote-overlay::before {
+  content: '';
+  position: absolute;
+  bottom: -20%; left: 50%;
+  transform: translateX(-50%);
+  width: 1200px; height: 800px;
+  background: radial-gradient(ellipse at center, rgba(251,191,36,0.3) 0%, rgba(249,115,22,0.15) 30%, rgba(234,88,12,0.06) 50%, transparent 75%);
+  pointer-events: none;
+}
+
+.quote-content {
+  text-align: center;
+  max-width: 500px;
+  padding: 0 24px;
+  position: relative;
+  z-index: 1;
+}
+
+.quote-greeting {
+  font-size: 14px;
+  color: var(--text3);
+  margin-bottom: 32px;
+  opacity: 0;
+  transform: translateY(10px);
+  transition: all 0.5s ease 0.3s;
+}
+.quote-overlay.visible .quote-greeting {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.quote-text-main {
+  font-size: 22px;
+  font-weight: 400;
+  color: var(--text);
+  line-height: 1.8;
+  font-style: italic;
+  letter-spacing: 0.5px;
+  opacity: 0;
+  transform: translateY(12px);
+  transition: all 0.6s ease 0.6s;
+}
+.quote-overlay.visible .quote-text-main {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.quote-translation {
+  font-size: 14px;
+  color: var(--text2);
+  margin-top: 10px;
+  font-style: normal;
+  opacity: 0;
+  transform: translateY(10px);
+  transition: all 0.5s ease 0.9s;
+}
+.quote-overlay.visible .quote-translation {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.quote-source-main {
+  font-size: 13px;
+  color: var(--text3);
+  margin-top: 20px;
+  opacity: 0;
+  transform: translateY(8px);
+  transition: all 0.5s ease 1.1s;
+}
+.quote-overlay.visible .quote-source-main {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.quote-entering {
+  font-size: 13px;
+  color: var(--gold);
+  margin-top: 40px;
+  opacity: 0;
+  transition: opacity 0.5s ease 2s;
+}
+.quote-overlay.visible .quote-entering {
+  opacity: 0.7;
+}
+
+/* 小装饰线 */
+.quote-line {
+  width: 40px; height: 2px;
+  background: linear-gradient(90deg, transparent, var(--gold), transparent);
+  margin: 24px auto 0;
+  opacity: 0;
+  transition: opacity 0.5s ease 1.3s;
+}
+.quote-overlay.visible .quote-line { opacity: 0.5; }
+
+/* 底部标注 */
+.annotation {
+  position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
+  background: var(--accent); color: #fff;
+  padding: 8px 20px; border-radius: var(--radius-btn);
+  font-size: 13px; z-index: 300; opacity: 0.9; white-space: nowrap;
+}
+</style>
+</head>
+<body>
+
+<div class="sun-rays"></div>
+
+<div class="login-container">
+  <!-- Logo -->
+  <div class="logo-area">
+    <div class="logo-icon">✦</div>
+    <div class="logo-text">Sunrise<span class="dot">.</span>AI</div>
+    <div class="logo-tagline">品牌内容创作平台</div>
+  </div>
+
+  <!-- 卡片 -->
+  <div class="card">
+    <div class="tabs" id="tabs">
+      <button class="tab active" onclick="switchTab('login')">登录</button>
+      <button class="tab" onclick="switchTab('register')">注册</button>
+    </div>
+
+    <!-- 登录 -->
+    <div id="page-login" class="page active">
+      <div class="form-group">
+        <label class="form-label">用户名</label>
+        <input class="form-input" type="text" placeholder="请输入用户名" value="小草">
+      </div>
+      <div class="form-group">
+        <label class="form-label">密码</label>
+        <input class="form-input" type="password" placeholder="请输入密码" value="••••••••">
+      </div>
+      <button class="btn-primary" onclick="handleLogin()">登录</button>
+      <div class="footer-text">忘记密码？请联系管理员重置</div>
+    </div>
+
+    <!-- 注册 -->
+    <div id="page-register" class="page">
+      <div class="form-group">
+        <label class="form-label">邀请码</label>
+        <input class="form-input invite-input" type="text" placeholder="6位邀请码" maxlength="6">
+        <div class="form-hint">请输入管理员提供的邀请码</div>
+      </div>
+      <div class="divider">填写个人信息</div>
+      <div class="form-group">
+        <label class="form-label">用户名</label>
+        <input class="form-input" type="text" placeholder="用于登录和显示">
+      </div>
+      <div class="form-group">
+        <label class="form-label">设置密码</label>
+        <input class="form-input" type="password" placeholder="至少 6 位" oninput="checkPwd(this.value)">
+        <div class="pwd-strength">
+          <div class="pwd-bar" id="bar1"></div>
+          <div class="pwd-bar" id="bar2"></div>
+          <div class="pwd-bar" id="bar3"></div>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">确认密码</label>
+        <input class="form-input" type="password" placeholder="再次输入密码">
+      </div>
+      <button class="btn-primary" onclick="handleLogin()">注册</button>
+    </div>
+  </div>
+
+  <div class="powered-by">Powered by <span>Uni.AI Agent</span></div>
+</div>
+
+<!-- 格言过渡层 -->
+<div class="quote-overlay" id="quoteOverlay">
+  <div class="quote-content">
+    <div class="quote-greeting" id="quoteGreeting"></div>
+    <div class="quote-text-main" id="quoteText"></div>
+    <div class="quote-translation" id="quoteTranslation"></div>
+    <div class="quote-source-main" id="quoteSource"></div>
+    <div class="quote-line"></div>
+    <div class="quote-entering">正在进入工作台...</div>
+  </div>
+</div>
+
+<div class="annotation" style="display:none"></div>
+
+<script>
+const QUOTES = [
+  { text: "Ars longa, vita brevis.", source: "Hippocrates · 拉丁谚语", translation: "艺术长存，人生短暂" },
+  { text: "The best way to predict the future is to create it.", source: "Peter Drucker", translation: "预测未来的最好方式，是去创造它" },
+  { text: "千里之行，始于足下。", source: "老子 ·《道德经》" },
+  { text: "Imagination is more important than knowledge.", source: "Albert Einstein", translation: "想象力比知识更重要" },
+  { text: "不畏浮云遮望眼，自缘身在最高层。", source: "王安石 ·《登飞来峰》" },
+  { text: "Carpe diem.", source: "Horace · 拉丁谚语", translation: "抓住今天" },
+  { text: "Stay hungry, stay foolish.", source: "Steve Jobs", translation: "求知若饥，虚心若愚" },
+  { text: "侘寂之美，在不完美中发现完美。", source: "日本美学 · Wabi-sabi" },
+  { text: "La vie est belle.", source: "法语谚语", translation: "生活是美好的" },
+  { text: "海阔凭鱼跃，天高任鸟飞。", source: "中国古谚" },
+  { text: "Per aspera ad astra.", source: "拉丁谚语", translation: "循此苦旅，以达星辰" },
+  { text: "The only way to do great work is to love what you do.", source: "Steve Jobs", translation: "成就伟大的唯一方法，是热爱你所做的事" },
+  { text: "每天早晨让你愿意醒来的理由。", source: "日本哲学 · Ikigai" },
+  { text: "博观而约取，厚积而薄发。", source: "苏轼" },
+  { text: "In the middle of difficulty lies opportunity.", source: "Albert Einstein", translation: "困难之中，蕴藏着机遇" },
+  { text: "Memento vivere.", source: "拉丁谚语", translation: "记得去生活" },
+  { text: "路漫漫其修远兮，吾将上下而求索。", source: "屈原 ·《离骚》" },
+  { text: "在平凡日常中，创造温暖与幸福。", source: "丹麦哲学 · Hygge" },
+  { text: "Done is better than perfect.", source: "Sheryl Sandberg", translation: "完成比完美更重要" },
+  { text: "大道至简。", source: "中国哲学" },
+  { text: "Sapere aude.", source: "Horace · 拉丁谚语", translation: "敢于求知" },
+  { text: "春风得意马蹄疾，一日看尽长安花。", source: "孟郊 ·《登科后》" },
+  { text: "因为有你，所以有我。", source: "南非哲学 · Ubuntu" },
+  { text: "Simplicity is the ultimate sophistication.", source: "Leonardo da Vinci", translation: "简约是终极的精致" },
+  { text: "长风破浪会有时，直挂云帆济沧海。", source: "李白 ·《行路难》" },
+  { text: "在逆境中展现超凡的决心与勇气。", source: "芬兰精神 · Sisu" },
+  { text: "会当凌绝顶，一览众山小。", source: "杜甫 ·《望岳》" },
+  { text: "Amor fati.", source: "Nietzsche · 拉丁语", translation: "热爱命运" },
+  { text: "山重水复疑无路，柳暗花明又一村。", source: "陆游 ·《游山西村》" },
+  { text: "将灵魂倾注于所做之事。", source: "希腊语 · Meraki" },
+];
+
+function getTimeGreeting() {
+  const h = new Date().getHours();
+  if (h < 6) return "夜深了，小草";
+  if (h < 9) return "早安，小草";
+  if (h < 12) return "上午好，小草";
+  if (h < 14) return "中午好，小草";
+  if (h < 18) return "下午好，小草";
+  return "晚上好，小草";
+}
+
+function getTodayQuote() {
+  const d = new Date();
+  const idx = (d.getFullYear() * 366 + d.getMonth() * 31 + d.getDate()) % QUOTES.length;
+  return QUOTES[idx];
+}
+
+function handleLogin() {
+  const overlay = document.getElementById('quoteOverlay');
+  const q = getTodayQuote();
+
+  document.getElementById('quoteGreeting').textContent = getTimeGreeting();
+  document.getElementById('quoteText').textContent = `"${q.text}"`;
+  document.getElementById('quoteTranslation').textContent = q.translation || '';
+  document.getElementById('quoteTranslation').style.display = q.translation ? 'block' : 'none';
+  document.getElementById('quoteSource').textContent = `— ${q.source}`;
+
+  overlay.classList.add('visible');
+
+  // 4秒后通知父页面切换到快速生成页（不淡出，保持格言画面）
+  setTimeout(() => {
+    if (window.parent && window.parent !== window) {
+      window.parent.postMessage('p8-login-done', '*');
+    }
+  }, 4500);
+}
+
+function switchTab(tab) {
+  document.querySelectorAll('.tab').forEach((t, i) => {
+    t.classList.toggle('active', (tab === 'login' && i === 0) || (tab === 'register' && i === 1));
+  });
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('page-' + tab).classList.add('active');
+}
+
+function checkPwd(val) {
+  const bars = [document.getElementById('bar1'), document.getElementById('bar2'), document.getElementById('bar3')];
+  bars.forEach(b => b.className = 'pwd-bar');
+  if (val.length >= 2) bars[0].classList.add('active-weak');
+  if (val.length >= 4) bars[1].classList.add('active-mid');
+  if (val.length >= 6) bars.forEach(b => b.className = 'pwd-bar active-strong');
+}
+</script>
+</body>
+</html>
